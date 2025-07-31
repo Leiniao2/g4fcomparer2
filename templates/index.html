@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>G4F Provider Comparer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .form-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .provider-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .provider-checkbox {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .provider-checkbox:hover {
+            background: #e9ecef;
+        }
+
+        .provider-checkbox input {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results-header {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .provider-result {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+
+        .provider-result:hover {
+            transform: translateY(-2px);
+        }
+
+        .provider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .provider-name {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .provider-status {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .response-time {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .provider-response {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            font-family: 'Georgia', serif;
+        }
+
+        .provider-error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #dc3545;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .form-container {
+                padding: 20px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 G4F Provider Comparer</h1>
+            <p>Compare responses from different GPT providers and find the best one for your needs</p>
+        </div>
+
+        <div class="form-container">
+            <form id="compareForm">
+                <div class="form-group">
+                    <label for="prompt">Your Prompt:</label>
+                    <textarea id="prompt" name="prompt" placeholder="Enter your question or prompt here..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="model">Model:</label>
+                    <select id="model" name="model">
+                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                        <option value="gpt-4">GPT-4</option>
+                        <option value="claude-v1">Claude v1</option>
+                        <option value="claude-instant">Claude Instant</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Select Providers (leave empty to test all):</label>
+                    <div class="provider-selection" id="providerSelection">
+                        <!-- Providers will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary" id="compareBtn">
+                        🔍 Compare Providers
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="clearBtn">
+                        🗑️ Clear Results
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <h3>Testing providers...</h3>
+            <p>This may take a few moments</p>
+        </div>
+
+        <div class="results" id="results">
+            <div class="results-header">
+                <h2>📊 Comparison Results</h2>
+                <div class="stats" id="stats">
+                    <!-- Stats will be populated here -->
+                </div>
+            </div>
+            <div id="resultsContainer">
+                <!-- Results will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let providers = [];
+
+        // Load providers on page load
+        async function loadProviders() {
+            try {
+                const response = await fetch('/api/providers');
+                providers = await response.json();
+                renderProviderSelection();
+            } catch (error) {
+                console.error('Error loading providers:', error);
+            }
+        }
+
+        function renderProviderSelection() {
+            const container = document.getElementById('providerSelection');
+            container.innerHTML = providers.map(provider => `
+                <label class="provider-checkbox">
+                    <input type="checkbox" name="providers" value="${provider.name}">
+                    <span>${provider.name}</span>
+                </label>
+            `).join('');
+        }
+
+        // Handle form submission
+        document.getElementById('compareForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const prompt = document.getElementById('prompt').value.trim();
+            if (!prompt) {
+                alert('Please enter a prompt');
+                return;
+            }
+
+            const model = document.getElementById('model').value;
+            const selectedProviders = Array.from(document.querySelectorAll('input[name="providers"]:checked'))
+                .map(cb => cb.value);
+
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/compare', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        model: model,
+                        providers: selectedProviders,
+                        max_workers: 5
+                    })
+                });
+
+                const data = await response.json();
+                displayResults(data);
+            } catch (error) {
+                console.error('Error comparing providers:', error);
+                alert('Error comparing providers. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Clear results
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('prompt').value = '';
+            document.querySelectorAll('input[name="providers"]').forEach(cb => cb.checked = false);
+        });
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('compareBtn').disabled = true;
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('compareBtn').disabled = false;
+        }
+
+        function displayResults(data) {
+            const stats = document.getElementById('stats');
+            const resultsContainer = document.getElementById('resultsContainer');
+            
+            // Display stats
+            const avgResponseTime = data.results.filter(r => r.success)
+                .reduce((sum, r) => sum + r.response_time, 0) / data.successful_providers || 0;
+            
+            stats.innerHTML = `
+                <div class="stat">
+                    <div class="stat-value">${data.total_providers}</div>
+                    <div class="stat-label">Total Providers</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">${data.successful_providers}</div>
+                    <div class="stat-label">Successful</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">${((data.successful_providers / data.total_providers) * 100).toFixed(1)}%</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">${avgResponseTime.toFixed(1)}s</div>
+                    <div class="stat-label">Avg Response Time</div>
+                </div>
+            `;
+
+            // Display results
+            resultsContainer.innerHTML = data.results.map(result => `
+                <div class="provider-result">
+                    <div class="provider-header">
+                        <div class="provider-name">${result.provider}</div>
+                        <div class="provider-status">
+                            <span class="status-badge ${result.success ? 'status-success' : 'status-error'}">
+                                ${result.success ? 'Success' : 'Failed'}
+                            </span>
+                            <span class="response-time">${result.response_time}s</span>
+                        </div>
+                    </div>
+                    ${result.success ? 
+                        `<div class="provider-response">${result.response}</div>` :
+                        `<div class="provider-error">❌ Error: ${result.error}</div>`
+                    }
+                </div>
+            `).join('');
+
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Load providers when page loads
+        loadProviders();
+    </script>
+</body>
+</html>
