@@ -388,6 +388,7 @@
                 <label class="provider-checkbox">
                     <input type="checkbox" name="providers" value="${provider.name}">
                     <span>${provider.name}</span>
+                    <small style="color: #666; margin-left: 8px;">(${provider.type})</small>
                 </label>
             `).join('');
         }
@@ -481,7 +482,10 @@
             resultsContainer.innerHTML = data.results.map(result => `
                 <div class="provider-result">
                     <div class="provider-header">
-                        <div class="provider-name">${result.provider}</div>
+                        <div class="provider-name">
+                            ${result.provider} 
+                            <small style="color: #666;">(${result.type || 'unknown'})</small>
+                        </div>
                         <div class="provider-status">
                             <span class="status-badge ${result.success ? 'status-success' : 'status-error'}">
                                 ${result.success ? 'Success' : 'Failed'}
